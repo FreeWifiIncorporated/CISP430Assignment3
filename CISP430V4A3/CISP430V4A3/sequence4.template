@@ -1,0 +1,91 @@
+// Lorin Zhang
+// CISP430
+// Assignment 3 
+// FILE: sequence4.template
+// IMPLEMENTS: The functions of the sequence4 template class 
+
+#include <cassert>    // Provides assert
+#include <cstdlib>    // Provides NULL and size_t
+using namespace CISP430_A3;
+
+// default constructor
+template <class Item>
+sequence<Item>::sequence()
+{ 
+	head_ptr = NULL;
+	tail_ptr = NULL;
+	cursor = NULL;
+	precursor = NULL;
+	many_nodes = 0;
+} 
+
+
+// explicit constructor
+template <class Item>
+sequence(const sequence& source)
+{
+
+}
+
+
+
+// destructor
+template <class Item>
+sequence<Item>::~sequence()
+{
+	// delete stuff 
+}
+
+template <class Item>
+void sequence<Item>::start()
+{
+
+}
+
+template <class Item>
+void sequence<Item>::advance()
+{
+
+}
+
+template <class Item>
+void sequence<Item>::insert(const value_type& entry)
+{
+
+}
+
+template <class Item>
+void sequence<Item>::attach(const value_type& entry)
+{
+
+}
+
+template <class Item>
+void sequence<Item>::operator =(const sequence& source)
+{
+
+}
+
+template <class Item>
+void sequence<Item>::remove_current()
+{
+
+}
+
+template <class Item>
+size_type sequence<Item>::size() const { return many_nodes; }
+{
+
+}
+
+template <class Item>
+bool sequence<Item>::is_item() const { return (cursor != NULL); }
+{
+
+}
+
+template <class Item>
+value_type sequence<Item>::current() const
+{
+
+}
