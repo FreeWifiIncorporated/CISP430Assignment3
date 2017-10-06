@@ -109,6 +109,21 @@ namespace CISP430_A3
 	}
 
 	template<class Item>
+	void sequence<Item>::operator=(const sequence & source)
+	{
+		// Overloads the assignment operator so that it can be used to assign values from one sequence to another.
+		sequence s2;
+		head_ptr = source.head_ptr;
+		tail_ptr = source.tail_ptr;
+		many_nodes = source.many_nodes;
+
+		for (cursor = head_ptr; cursor != NULL; ++cursor)
+		{
+			cursor->data() = source.cursor->data();
+		}
+	}
+
+	template<class Item>
 	void sequence<Item>::remove_current()
 	{
 		// Removes the current item in the list.
@@ -131,15 +146,15 @@ namespace CISP430_A3
 
 			// Remove the current item from the list.
 			list_remove(precursor); // Calls function list_remove using precursor to remove the current item from the list.
-								// After call, there should be one less item in the list.
+									// After call, there should be one less item in the list.
 			--many_nodes; // Decrease many_nodes by one to keep track of how many items are in the list.
+		}
 	}
 
 	template<class Item>
-	value_type sequence<Item>::current() const
+	Item sequence<Item>::current() const
 	{
-
-		return cursor->list(); // Returns the value pointed at by cursor back to the function call.
+		return cursor->data(); // Returns the value pointed at by cursor back to the function call.
 	}
 
 
