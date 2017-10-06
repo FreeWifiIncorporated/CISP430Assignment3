@@ -18,6 +18,9 @@
     <None Include="CISP430V4A3Exam.exe" />
     <None Include="CISP430V4A3Test.exe" />
     <None Include="node2.template" />
+    <None Include="sequence4.template">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="node2.h">
