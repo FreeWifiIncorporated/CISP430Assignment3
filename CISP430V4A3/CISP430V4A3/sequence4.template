@@ -13,6 +13,7 @@ namespace CISP430_A3
 	{
 		// Construct an empty sequence.
 		head_ptr = NULL;
+		tail_ptr = NULL;
 		many_nodes = 0;
 	}
 
@@ -51,7 +52,7 @@ namespace CISP430_A3
 
 		// Move cursor to the next item in the list.
 		++cursor;
-		precursor = cursor - 1;
+
 	}
 
 	template<class Item>
@@ -61,24 +62,29 @@ namespace CISP430_A3
 		// If there is no current item, then the entry is inserted at the front of the list.
 
 		// Check if there is any items in the list.
-		if (head_ptr == NULL)
+		if (!is_item())
 		{
-			// If head_ptr points to NULL, then there is no item in the list and the new entry should be inserted at the front of the list.
-			list_head_insert(head_ptr, entry); // Calls the function list_head_insert() to insert the new entry at the location pointed to by the head_ptr.
-			++many_nodes; // Increase many_nodes by one to keep track of how many items are in the list.
+			if (head_ptr == NULL)
+			{
+				// If head_ptr points to NULL, then there is no item in the list and the new entry should be inserted at the front of the list.
+				list_head_insert(head_ptr, entry); // Calls the function list_head_insert() to insert the new entry at the location pointed to by the head_ptr.
+				++many_nodes; // Increase many_nodes by one to keep track of how many items are in the list.
+			}
+			else
+			{
+				// Else, insert the new entry in the spot before the current item.
+
+				// Ensure that precursor points to the spot before the current item (which is in the spot pointed at by cursor).
+				precursor = cursor - 1;
+
+				// Put the new entry in the list.
+				list_insert(precursor, entry); // Calls the function list_insert to insert the new entry at the spot pointed at by precursor.
+				
+				++many_nodes; // After function call, the new entry should be in the list and the number of items (nodes) in the list should have increased by one.
+			}
 		}
-		else
-		{
-			// Else, insert the new entry in the spot before the current item.
 
-			// Ensure that precursor points to the spot before the current item (which is in the spot pointed at by cursor).
-			precursor = cursor - 1;
-
-			// Put the new entry in the list.
-			list_insert(precursor, entry); // Calls the function list_insert to insert the new entry at the spot pointed at by precursor.
-
-			++many_nodes; // After function call, the new entry should be in the list and the number of items (nodes) in the list should have increased by one.
-		}
+		cursor = head_ptr;
 	}
 
 	template<class Item>
@@ -87,25 +93,39 @@ namespace CISP430_A3
 		// Inserts a new copy of entry after the current item and makes it the new current item.
 		// If there is no current item, then the new entry is attached to the end of the list.
 
-		// Check if there is a current item.
-		if (cursor == NULL)
+		// Check if thereis a current item.
+		if (!is_item())
 		{
-			// If cursor is equal to NULL, then there is no current item.
-			list_insert(cursor, entry); // Calls the function list_insert to insert a copy of entry onto the list.
-			++many_nodes; // Increases the count of many_nodes by one to keep track of how many items there are in the list.
-		}
-		else
-		{
-			// Else, the copy of the new entry needs to be inserted after the current item.
+			if (head_ptr == NULL)
+			{
+				// If cursor is equal to NULL, then there is no current item.
 
-			// Ensure that precursor points to the location after the current item.
-			// I know this sounds funny, but that way we don't have to make a new pointer just for this.
-			precursor = cursor + 1;
+				list_head_insert(head_ptr, entry); // Calls the function list_insert to insert a copy of entry onto the list.
+				cursor = head_ptr;
+			}
+			else if (cursor == NULL)
+			{
+				// Else, the copy of the new entry needs to be inserted after the current item.
 
-			// Insert the new copy of entry into the list.
-			list_insert(precursor, entry); // Calls the function list_insert() to put the new item into the list using the location provided by precursor.
-			++many_nodes; // After function call, there should be one more item in the list so increase many_nodes by one to keep track of how many items are now in the list.
+				// Ensure that precursor points to the location after the current item.
+				// I know this sounds funny, but that way we don't have to make a new pointer just for this.
+				precursor = cursor - 1;
+
+				// Insert the new copy of entry into the list.
+				list_insert(precursor, entry); // Calls the function list_insert() to put the new item into the list using the location provided by precursor.
+				cursor = precursor;
+
+			}
+			else
+			{
+				precursor = cursor + 1;
+
+				list_insert(precursor, entry);
+				cursor = precursor;
+			}
 		}
+
+		++many_nodes;
 	}
 
 	template<class Item>
@@ -115,12 +135,10 @@ namespace CISP430_A3
 		sequence s2;
 		head_ptr = source.head_ptr;
 		tail_ptr = source.tail_ptr;
+		cursor = head_ptr;
 		many_nodes = source.many_nodes;
 
-		for (cursor = head_ptr; cursor != NULL; ++cursor)
-		{
-			cursor->data() = source.cursor->data();
-		}
+		list_copy(cursor, head_ptr, tail_ptr);
 	}
 
 	template<class Item>
@@ -134,12 +152,12 @@ namespace CISP430_A3
 			// If it is, then the old head pointer needs to be removed and the next item in the list made the new one.
 			// Call list_head_remove() to do this.
 			list_head_remove(head_ptr);
-			--many_nodes; // Decrease many_nodes by one to keep track of how many items are in the list.
+			cursor = head_ptr;
 		}
 		else
 		{
 			// Else, the current item needs to be romoved and the next item in the list made to be the new current item.
-
+	
 			// Ensure that precursor points to the location before the current item.
 			// Precursor is needed because the funcion list_remove() uses precursor to remove the current item. For some weird reason. Not sure why tbh.
 			precursor = cursor - 1;
@@ -147,8 +165,9 @@ namespace CISP430_A3
 			// Remove the current item from the list.
 			list_remove(precursor); // Calls function list_remove using precursor to remove the current item from the list.
 									// After call, there should be one less item in the list.
-			--many_nodes; // Decrease many_nodes by one to keep track of how many items are in the list.
 		}
+
+		--many_nodes;
 	}
 
 	template<class Item>
