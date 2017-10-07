@@ -1,9 +1,10 @@
-// Implementation file for sequence4.h
+// Christos Papadopoulos
+// sequence4.template
+// Template implementation file for sequence4.h
 
-#include <cassert>
-#include <cstdlib>
-#include "node2.h"
-#include "sequence4.h"
+#include <cstdlib> // Provides NULL value
+#include "node2.h" // Provides node template class
+#include "sequence4.h" // sequence header file
 
 namespace CISP430_A3
 {
@@ -26,20 +27,20 @@ namespace CISP430_A3
 		// Copy constructor, creates a copy to the sequence. Pretty self explanitory.
 		list_copy(source.head_ptr, head_ptr, tail_ptr); // Calls function list_copy() to copy the values of source starting at source.head_ptr to copy sequence.
 		many_nodes = source.many_nodes; // Assigns the value of many nodes for the copy to however many nodes were used in source. Copy should have the same number of nodes as the source.
-
-		size_type sourceCursorIndex = 0;
-		node<Item>* cursorAddress = source.cursor;
-		node<Item>* tempSourceCursor = source.head_ptr;
-		while (cursorAddress != tempSourceCursor)
+		
+		size_type sourceCursorIndex = 0; // declare an index to store the index of source's cursor
+		node<Item>* cursorAddress = source.cursor; // copy the address of the cursor pointer to be checked against later
+		node<Item>* tempSourceCursor = source.head_ptr; // copy the address of source's head_ptr so source can be iterated through without changing the const source
+		while (cursorAddress != tempSourceCursor) // check when the node being pointed at is the same as source's cursor
 		{
-			tempSourceCursor = tempSourceCursor->link();
-			++sourceCursorIndex;
+			tempSourceCursor = tempSourceCursor->link(); // assign the temp cursor pointer to the next node
+			++sourceCursorIndex; // increase the cursor index by one
 		}
 
-		start();
+		start(); // start the cursor at the beginning
 		for (size_type i = 0; i < sourceCursorIndex; ++i)
 		{
-			advance();
+			advance(); // advance the cursor (and by extension the precursor) until it is at the same "index" as source's cursor
 		}
 	}
 
@@ -98,11 +99,13 @@ namespace CISP430_A3
 		}
 		else
 		{
+			// Else, insert after precursor and set cursor to the new item.
+
 			list_insert(precursor, entry);
 			cursor = precursor->link();
 		}
 
-		++many_nodes;
+		++many_nodes; // increase many nodes by one to account for another node being added in the linked list
 	}
 
 	template<class Item>
@@ -153,30 +156,32 @@ namespace CISP430_A3
 	void sequence<Item>::operator=(const sequence & source)
 	{
 		// Overloads the assignment operator so that it can be used to assign values from one sequence to another.
+		
+		// If the current object is the same object as what source is pointing to then return
 		if (this == &source)
 		{
 			return;
 		}
 
-		list_clear(head_ptr);
-		many_nodes = 0;
+		list_clear(head_ptr); // delete the linked list currently pointed at by the sequence object and release the memory
+		many_nodes = 0; // set the amount of nodes to 0
 
-		list_copy(source.head_ptr, head_ptr, tail_ptr);
-		many_nodes = source.many_nodes;
+		list_copy(source.head_ptr, head_ptr, tail_ptr); // copy the content of source's linked list to a new linked list
+		many_nodes = source.many_nodes; // set the amount of nodes to the amount source had
 
-		size_type sourceCursorIndex = 0;
-		node<Item>* cursorAddress = source.cursor;
-		node<Item>* tempSourceCursor = source.head_ptr;
-		while (cursorAddress != tempSourceCursor)
+		size_type sourceCursorIndex = 0; // declare an index to store the index of source's cursor
+		node<Item>* cursorAddress = source.cursor; // copy the address of the cursor pointer to be checked against later
+		node<Item>* tempSourceCursor = source.head_ptr; // copy the address of source's head_ptr so source can be iterated through without changing the const source
+		while (cursorAddress != tempSourceCursor) // check when the node being pointed at is the same as source's cursor
 		{
-			tempSourceCursor = tempSourceCursor->link();
-			++sourceCursorIndex;
+			tempSourceCursor = tempSourceCursor->link(); // assign the temp cursor pointer to the next node
+			++sourceCursorIndex; // increase the cursor index by one
 		}
 
-		start();
+		start(); // start the cursor at the beginning
 		for (size_type i = 0; i < sourceCursorIndex; ++i)
 		{
-			advance();
+			advance(); // advance the cursor (and by extension the precursor) until it is at the same "index" as source's cursor
 		}
 	}
 
@@ -204,7 +209,7 @@ namespace CISP430_A3
 
 		}
 
-		--many_nodes;
+		--many_nodes; // Decreases the count of how many items there are in the list.
 	}
 
 	template<class Item>
