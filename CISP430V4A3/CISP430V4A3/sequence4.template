@@ -24,10 +24,14 @@ namespace CISP430_A3
 		//Uses node2.h
 	{
 		// Copy constructor, creates a copy to the sequence. Pretty self explainitory.
-		node<Item> *tail_ptr; // Needed for arguement of list_copy.
+		//node<Item> *tail_ptr; // Needed for arguement of list_copy.
+		head_ptr = source.head_ptr;
+		tail_ptr = source.tail_ptr;
+		cursor = source.cursor;
 
 		list_copy(source.head_ptr, head_ptr, tail_ptr); // Calls function list_copy() to copy the values of source starting at source.head_ptr to copy sequence.
-		many_nodes = source.many_nodes; // Assigns the value of many nodes for the copy to however many nodes were used in source. Copy should have the same number of nodes as the source.
+		many_nodes = source.many_nodes; // Assigns the value of many nodes for the copy to however many nodes were used in source. Copy should have the same number of nodes as the source.;
+		cursor = tail_ptr;
 	}
 
 	template <class Item>
@@ -65,29 +69,31 @@ namespace CISP430_A3
 		// If there is no current item, then the entry is inserted at the front of the list.
 
 		// Check if there is any items in the list.
-		if (!is_item())
+
+		if (head_ptr == NULL)
 		{
-			if (head_ptr == NULL)
-			{
 				// If head_ptr points to NULL, then there is no item in the list and the new entry should be inserted at the front of the list.
-				list_head_insert(head_ptr, entry); // Calls the function list_head_insert() to insert the new entry at the location pointed to by the head_ptr.
-				++many_nodes; // Increase many_nodes by one to keep track of how many items are in the list.
-			}
-			else
-			{
+			list_head_insert(head_ptr, entry); // Calls the function list_head_insert() to insert the new entry at the location pointed to by the head_ptr.
+			tail_ptr = head_ptr;
+			cursor = head_ptr;
+			precursor = NULL;
+		}
+		else if (is_item() == false || cursor == head_ptr)
+		{
 				// Else, insert the new entry in the spot before the current item.
 
-				// Ensure that precursor points to the spot before the current item (which is in the spot pointed at by cursor).
-				precursor = cursor - 1;
-
 				// Put the new entry in the list.
-				list_insert(precursor, entry); // Calls the function list_insert to insert the new entry at the spot pointed at by precursor.
-				
-				++many_nodes; // After function call, the new entry should be in the list and the number of items (nodes) in the list should have increased by one.
-			}
+			list_head_insert(head_ptr, entry); // Calls the function list_insert to insert the new entry at the spot pointed at by precursor.
+			cursor = head_ptr;
+			precursor = NULL;
+		}
+		else
+		{
+			list_insert(precursor, entry);
+			cursor = precursor->link();
 		}
 
-		cursor = head_ptr;
+		++many_nodes;
 	}
 
 	template<class Item>
@@ -97,53 +103,38 @@ namespace CISP430_A3
 		// If there is no current item, then the new entry is attached to the end of the list.
 
 		// Check if there is a current item.
-		if (!is_item())
+		// If cursor does not currently point at an item, then need to determine there is anything in the list or if cursor has moved past the tail_ptr (the last item in the list).
+		if (head_ptr == NULL)
 		{
-			// If cursor does not currently point at an item, then need to determine there is anything in the list or if cursor has moved past the tail_ptr (the last item in the list).
-			if (head_ptr == NULL)
-			{
-				// If head_ptr is equal to NULL, then there is no item in the list yet since head_ptr always points to the first item in the list.
+			// If head_ptr is equal to NULL, then there is no item in the list yet since head_ptr always points to the first item in the list.
 
-				list_head_insert(head_ptr, entry); // Calls the function list_insert to insert a copy of entry onto the list.
-				cursor = head_ptr; // Cursor points to current item, head_ptr currently points to the only item in the list. So, point cursor to head_ptr.
-				tail_ptr = cursor; // tail_ptr points to the last item in the list and cursor now points to the only item in the list so cursor also points to last item in list.
-								   // Point tail_ptr at cursor.
-			}
-			else if (cursor > tail_ptr)
-			{
-				// Else if cursor points to a position after tail_ptr (the last item in the list)
-				// then copy of the new entry needs to be inserted at the end of the list
+			list_head_insert(head_ptr, entry); // Calls the function list_insert to insert a copy of entry onto the list.
+			cursor = head_ptr; // Cursor points to current item, head_ptr currently points to the only item in the list. So, point cursor to head_ptr.
+			tail_ptr = cursor; // tail_ptr points to the last item in the list and cursor now points to the only item in the list so cursor also points to last item in list.
+							   // Point tail_ptr at cursor.
+		}
+		else if (!is_item() || cursor == tail_ptr)
+		{
+			// Else if cursor points to a position after tail_ptr (the last item in the list)
+			// then copy of the new entry needs to be inserted at the end of the list
 
-				// Ensure that we are using the right position.
-				cursor = tail_ptr + 1; // Ensures that cursor points to NULL so that precursor will point to the correct spot that the item needs to be inserted at.
-				precursor = cursor - 1; // Sets precursor to the spot before NULL.
+			// Ensure that we are using the right position.
+			precursor = cursor; // Sets precursor to the spot before NULL.
 
-				list_insert(precursor, entry); // Calls list_insert to insert a copy of the new entry at the spot pointed to by precursor.
+			list_insert(tail_ptr, entry); // Calls list_insert to insert a copy of the new entry at the spot pointed to by precursor.
 
-				// After call, tail_ptr needs to point at the new item in the list which is pointed to by precursor.
-				tail_ptr = precursor; // tail_ptr now points to the last item in the list.
-				cursor = tail_ptr; // cursor now points to the new current item on the list, which is the last item in the list.
-			}
+			// After call, tail_ptr needs to point at the new item in the list which is pointed to by precursor.
+			tail_ptr = tail_ptr->link();// tail_ptr now points to the last item in the list.
+			cursor = tail_ptr; // cursor now points to the new current item on the list, which is the last item in the list.
+
 		}
 		else
 		{
 			// Esle, if there is a current item, then a copy of the new entry must be inserted after the current item.
 
-			// Check if there is more than one item in the list.
-			if (many_nodes == 1)
-			{
-				precursor = cursor;
-				list_insert(precursor, entry);
-				cursor = precursor->link();
-				tail_ptr = cursor;
-			}
-			else
-			{
-				precursor = cursor; // Cursor points to the current item, so precursor needs to point to the spot after the current item.
-
-				list_insert(precursor, entry); // Calls list_insert() to insert a copy of the new entry at the position indicated by precursor.
-				cursor = precursor->link(); // Points cursor at the new current item (the added item)
-			}
+			list_insert(cursor, entry);
+			precursor = cursor;
+			cursor = precursor->link();
 		}
 
 		++many_nodes; // Increases the count of how many items there are in the list.
@@ -184,10 +175,6 @@ namespace CISP430_A3
 									// After call, there should be one less item in the list.
 			cursor = precursor->link();
 
-			if (cursor == NULL)
-			{
-				start();
-			}
 		}
 
 		--many_nodes;
