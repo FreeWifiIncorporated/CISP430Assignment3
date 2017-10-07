@@ -114,6 +114,7 @@
     <None Include="CISP430V4A3Exam.exe" />
     <None Include="CISP430V4A3Test.exe" />
     <None Include="node2.template" />
+    <None Include="sequence4.template" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="node2.h" />
@@ -121,7 +122,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sequence_exam4.cpp" />
-    <ClCompile Include="sequence_test4.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

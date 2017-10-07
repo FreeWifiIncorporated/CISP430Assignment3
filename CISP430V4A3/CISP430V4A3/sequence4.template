@@ -4,88 +4,202 @@
 // FILE: sequence4.template
 // IMPLEMENTS: The functions of the sequence4 template class 
 
-#include <cassert>    // Provides assert
-#include <cstdlib>    // Provides NULL and size_t
-using namespace CISP430_A3;
 
-// default constructor
-template <class Item>
-sequence<Item>::sequence()
-{ 
-	head_ptr = NULL;
-	tail_ptr = NULL;
-	cursor = NULL;
-	precursor = NULL;
-	many_nodes = 0;
-} 
+#include <cassert>
+#include <cstdlib>
+#include "node2.h"
+#include "sequence4.h"
 
-
-// explicit constructor
-template <class Item>
-sequence(const sequence& source)
+namespace CISP430_A3
 {
+	template <class Item>
+	sequence<Item>::sequence()
+		// Uses cstdlib.
+	{
+		// Construct an empty sequence.
+		head_ptr = NULL;
+		tail_ptr = NULL;
+		cursor = NULL;
+		precursor = NULL;
+		many_nodes = 0;
+	}
 
-}
+	template <class Item>
+	sequence<Item>::sequence(const sequence& source)
+		//Uses node2.h
+	{
+		// Copy constructor, creates a copy to the sequence. Pretty self explainitory.
+		node<Item> *tail_ptr; // Needed for arguement of list_copy.
 
+		list_copy(source.head_ptr, head_ptr, tail_ptr); // Calls function list_copy() to copy the values of source starting at source.head_ptr to copy sequence.
+		many_nodes = source.many_nodes; // Assigns the value of many nodes for the copy to however many nodes were used in source. Copy should have the same number of nodes as the source.
+	}
 
+	template <class Item>
+	sequence<Item>::~sequence()
+		// Uses node2.h
+	{
+		// Sequence destructor. Destructs the object when it's no longer being used. Also pretty self explainitory.
+		list_clear(head_ptr); // Calls function list_clear() using the value of head_ptr to clear the nodes starting at the first node.
+		many_nodes = 0; // After function call, the number of nodes should be 0. So, many_nodes is assigned to 0.
+	}
 
-// destructor
-template <class Item>
-sequence<Item>::~sequence()
-{
-	// delete stuff 
-}
+	template<class Item>
+	void sequence<Item>::start()
+	{
+		// Makes the first item the current item.
+		cursor = head_ptr; // Assigns the location pointed to by head_ptr to cursor so that cursor is at the start of the function.
+	}
 
-template <class Item>
-void sequence<Item>::start()
-{
+	template<class Item>
+	void sequence<Item>::advance()
+	{
+		// Makes the next item in the list the current item.
+		// If current item is already the last item, then there is no next current item.
 
-}
+		// Move cursor to the next item in the list.
+		precursor = cursor;
+		cursor = precursor->link();
 
-template <class Item>
-void sequence<Item>::advance()
-{
+	}
 
-}
+	template<class Item>
+	void sequence<Item>::insert(const value_type & entry)
+	{
+		// Inserts a new copy of entry before the current item and makes it the new current item.
+		// If there is no current item, then the entry is inserted at the front of the list.
 
-template <class Item>
-void sequence<Item>::insert(const value_type& entry)
-{
+		// Check if there is any items in the list.
 
-}
+		if (head_ptr == NULL) //if empty list
+		{
+			list_head_insert(head_ptr, entry); //insert at head (create list)
+			tail_ptr = head_ptr; //one item in list, it is the beginning and end
+			cursor = head_ptr; //new item is set to current
+			precursor = NULL; //no prior items in list
+		}
+		else if (is_item() == false || cursor == head_ptr)
+		{ //if off the edge of the list or at beginning, insert at front
+			list_head_insert(head_ptr, entry); //function updates head_ptr for us
+			cursor = head_ptr;
+			precursor = NULL;
+		}
+		else //is_item() == true
+		{ //otherwise, standard insert:
+			list_insert(precursor, entry);
+			cursor = precursor->link();
+		}
+		many_nodes++; //update node count
+	}
 
-template <class Item>
-void sequence<Item>::attach(const value_type& entry)
-{
+	template<class Item>
+	void sequence<Item>::attach(const value_type & entry)
+	{
+		// Inserts a new copy of entry after the current item and makes it the new current item.
+		// If there is no current item, then the new entry is attached to the end of the list.
 
-}
+		// Check if there is a current item.
+		if (!is_item())
+		{
+			// If cursor does not currently point at an item, then need to determine there is anything in the list or if cursor has moved past the tail_ptr (the last item in the list).
+			if (head_ptr == NULL)
+			{
+				// If head_ptr is equal to NULL, then there is no item in the list yet since head_ptr always points to the first item in the list.
 
-template <class Item>
-void sequence<Item>::operator =(const sequence& source)
-{
+				list_head_insert(head_ptr, entry); // Calls the function list_insert to insert a copy of entry onto the list.
+				cursor = head_ptr; // Cursor points to current item, head_ptr currently points to the only item in the list. So, point cursor to head_ptr.
+				tail_ptr = cursor; // tail_ptr points to the last item in the list and cursor now points to the only item in the list so cursor also points to last item in list.
+								   // Point tail_ptr at cursor.
+			}
+			else if (cursor > tail_ptr)
+			{
+				// Else if cursor points to a position after tail_ptr (the last item in the list)
+				// then copy of the new entry needs to be inserted at the end of the list
 
-}
+				// Ensure that we are using the right position.
+				cursor = tail_ptr + 1; // Ensures that cursor points to NULL so that precursor will point to the correct spot that the item needs to be inserted at.
+				precursor = cursor - 1; // Sets precursor to the spot before NULL.
 
-template <class Item>
-void sequence<Item>::remove_current()
-{
+				list_insert(precursor, entry); // Calls list_insert to insert a copy of the new entry at the spot pointed to by precursor.
 
-}
+				// After call, tail_ptr needs to point at the new item in the list which is pointed to by precursor.
+				tail_ptr = precursor; // tail_ptr now points to the last item in the list.
+				cursor = tail_ptr; // cursor now points to the new current item on the list, which is the last item in the list.
+			}
+		}
+		else
+		{
+			// Esle, if there is a current item, then a copy of the new entry must be inserted after the current item.
 
-template <class Item>
-size_type sequence<Item>::size() const { return many_nodes; }
-{
+			// Check if there is more than one item in the list.
+			if (many_nodes == 1)
+			{
+				precursor = cursor;
+				list_insert(precursor, entry);
+				cursor = precursor->link();
+				tail_ptr = cursor;
+			}
+			else
+			{
+				precursor = cursor; // Cursor points to the current item, so precursor needs to point to the spot after the current item.
 
-}
+				list_insert(precursor, entry); // Calls list_insert() to insert a copy of the new entry at the position indicated by precursor.
+				cursor = precursor->link(); // Points cursor at the new current item (the added item)
+			}
+		}
 
-template <class Item>
-bool sequence<Item>::is_item() const { return (cursor != NULL); }
-{
+		++many_nodes; // Increases the count of how many items there are in the list.
+	}
 
-}
+	template<class Item>
+	void sequence<Item>::operator=(const sequence & source)
+	{
+		// Overloads the assignment operator so that it can be used to assign values from one sequence to another.
+		sequence s2;
+		head_ptr = source.head_ptr;
+		tail_ptr = source.tail_ptr;
+		cursor = head_ptr;
+		many_nodes = source.many_nodes;
 
-template <class Item>
-value_type sequence<Item>::current() const
-{
+		list_copy(cursor, head_ptr, tail_ptr);
+	}
+
+	template<class Item>
+	void sequence<Item>::remove_current()
+	{
+		// Removes the current item in the list.
+
+		// Check if the current item is the first item in the list.
+		if (cursor == head_ptr)
+		{
+			// If it is, then the old head pointer needs to be removed and the next item in the list made the new one.
+			// Call list_head_remove() to do this.
+			list_head_remove(head_ptr);
+			cursor = head_ptr;
+		}
+		else
+		{
+			// Else, the current item needs to be romoved and the next item in the list made to be the new current item.
+
+			// Remove the current item from the list.
+			list_remove(precursor); // Calls function list_remove using precursor to remove the current item from the list.
+									// After call, there should be one less item in the list.
+			cursor = precursor->link();
+
+			if (cursor == NULL)
+			{
+				start();
+			}
+		}
+
+		--many_nodes;
+	}
+
+	template<class Item>
+	Item sequence<Item>::current() const
+	{
+		return cursor->data(); // Returns the value pointed at by cursor back to the function call.
+	}
+
 
 }
