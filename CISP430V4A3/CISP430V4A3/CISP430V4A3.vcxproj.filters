@@ -31,6 +31,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="sequence_test4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="sequence_exam4.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
