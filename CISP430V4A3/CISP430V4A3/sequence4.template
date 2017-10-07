@@ -1,17 +1,15 @@
 // Lorin Zhang
-// CISP430
-// Assignment 3 
-// FILE: sequence4.template
-// IMPLEMENTS: The functions of the sequence4 template class 
+// sequence4.template
+// Template implementation file for sequence4.h
 
-
-#include <cassert>
-#include <cstdlib>
-#include "node2.h"
-#include "sequence4.h"
+#include <cstdlib> // Provides NULL value
+#include "node2.h" // Provides node template class
+#include "sequence4.h" // sequence header file
 
 namespace CISP430_A3
 {
+
+	// default constructor 
 	template <class Item>
 	sequence<Item>::sequence()
 		// Uses cstdlib.
@@ -28,13 +26,27 @@ namespace CISP430_A3
 	sequence<Item>::sequence(const sequence& source)
 		//Uses node2.h
 	{
-		// Copy constructor, creates a copy to the sequence. Pretty self explainitory.
-		node<Item> *tail_ptr; // Needed for arguement of list_copy.
-
+		// Copy constructor, creates a copy to the sequence. Pretty self explanitory.
 		list_copy(source.head_ptr, head_ptr, tail_ptr); // Calls function list_copy() to copy the values of source starting at source.head_ptr to copy sequence.
 		many_nodes = source.many_nodes; // Assigns the value of many nodes for the copy to however many nodes were used in source. Copy should have the same number of nodes as the source.
+		
+		size_type sourceCursorIndex = 0; // declare an index to store the index of source's cursor
+		node<Item>* cursorAddress = source.cursor; // copy the address of the cursor pointer to be checked against later
+		node<Item>* tempSourceCursor = source.head_ptr; // copy the address of source's head_ptr so source can be iterated through without changing the const source
+		while (cursorAddress != tempSourceCursor) // check when the node being pointed at is the same as source's cursor
+		{
+			tempSourceCursor = tempSourceCursor->link(); // assign the temp cursor pointer to the next node
+			++sourceCursorIndex; // increase the cursor index by one
+		}
+
+		start(); // start the cursor at the beginning
+		for (size_type i = 0; i < sourceCursorIndex; ++i)
+		{
+			advance(); // advance the cursor (and by extension the precursor) until it is at the same "index" as source's cursor
+		}
 	}
 
+	// destructor 
 	template <class Item>
 	sequence<Item>::~sequence()
 		// Uses node2.h
@@ -71,25 +83,32 @@ namespace CISP430_A3
 
 		// Check if there is any items in the list.
 
-		if (head_ptr == NULL) //if empty list
+		if (head_ptr == NULL)
 		{
-			list_head_insert(head_ptr, entry); //insert at head (create list)
-			tail_ptr = head_ptr; //one item in list, it is the beginning and end
-			cursor = head_ptr; //new item is set to current
-			precursor = NULL; //no prior items in list
-		}
-		else if (is_item() == false || cursor == head_ptr)
-		{ //if off the edge of the list or at beginning, insert at front
-			list_head_insert(head_ptr, entry); //function updates head_ptr for us
+				// If head_ptr points to NULL, then there is no item in the list and the new entry should be inserted at the front of the list.
+			list_head_insert(head_ptr, entry); // Calls the function list_head_insert() to insert the new entry at the location pointed to by the head_ptr.
+			tail_ptr = head_ptr;
 			cursor = head_ptr;
 			precursor = NULL;
 		}
-		else //is_item() == true
-		{ //otherwise, standard insert:
+		else if (is_item() == false || cursor == head_ptr)
+		{
+				// Else, insert the new entry in the spot before the current item.
+
+				// Put the new entry in the list.
+			list_head_insert(head_ptr, entry); // Calls the function list_insert to insert the new entry at the spot pointed at by precursor.
+			cursor = head_ptr;
+			precursor = NULL;
+		}
+		else
+		{
+			// Else, insert after precursor and set cursor to the new item.
+
 			list_insert(precursor, entry);
 			cursor = precursor->link();
 		}
-		many_nodes++; //update node count
+
+		++many_nodes; // increase many nodes by one to account for another node being added in the linked list
 	}
 
 	template<class Item>
@@ -99,52 +118,75 @@ namespace CISP430_A3
 		// If there is no current item, then the new entry is attached to the end of the list.
 
 		// Check if there is a current item.
-			// If cursor does not currently point at an item, then need to determine there is anything in the list or if cursor has moved past the tail_ptr (the last item in the list).
+		// If cursor does not currently point at an item, then need to determine there is anything in the list or if cursor has moved past the tail_ptr (the last item in the list).
 		if (head_ptr == NULL)
-			{
-				// If head_ptr is equal to NULL, then there is no item in the list yet since head_ptr always points to the first item in the list.
+		{
+			// If head_ptr is equal to NULL, then there is no item in the list yet since head_ptr always points to the first item in the list.
 
-				list_head_insert(head_ptr, entry); // Calls the function list_insert to insert a copy of entry onto the list.
-				cursor = head_ptr; // Cursor points to current item, head_ptr currently points to the only item in the list. So, point cursor to head_ptr.
-				tail_ptr = head_ptr; // tail_ptr points to the last item in the list and cursor now points to the only item in the list so cursor also points to last item in list.
-								   // Point tail_ptr at cursor.
-			}
+			list_head_insert(head_ptr, entry); // Calls the function list_insert to insert a copy of entry onto the list.
+			cursor = head_ptr; // Cursor points to current item, head_ptr currently points to the only item in the list. So, point cursor to head_ptr.
+			tail_ptr = cursor; // tail_ptr points to the last item in the list and cursor now points to the only item in the list so cursor also points to last item in list.
+							   // Point tail_ptr at cursor.
+		}
 		else if (!is_item() || cursor == tail_ptr)
-			{
-				// Else if cursor points to a position after tail_ptr (the last item in the list)
-				// then copy of the new entry needs to be inserted at the end of the list
+		{
+			// Else if cursor points to a position after tail_ptr (the last item in the list)
+			// then copy of the new entry needs to be inserted at the end of the list
 
-				// Ensure that we are using the right position.
-				precursor = cursor; // Sets precursor to the spot before NULL.
-				list_insert(tail_ptr, entry);
-				tail_ptr = tail_ptr->link(); 
-				cursor = tail_ptr; // Ensures that cursor points to NULL so that precursor will point to the correct spot that the item needs to be inserted at.
+			// Ensure that we are using the right position.
+			precursor = cursor; // Sets precursor to the spot before NULL.
 
-			}
+			list_insert(tail_ptr, entry); // Calls list_insert to insert a copy of the new entry at the spot pointed to by precursor.
+
+			// After call, tail_ptr needs to point at the new item in the list which is pointed to by precursor.
+			tail_ptr = tail_ptr->link();// tail_ptr now points to the last item in the list.
+			cursor = tail_ptr; // cursor now points to the new current item on the list, which is the last item in the list.
+
+		}
 		else
 		{
-			// Esle, if there is a current item, then a copy of the new entry must be inserted after the current item.
+			// Elsee, if there is a current item, then a copy of the new entry must be inserted after the current item.
 
-				list_insert(cursor, entry);
-				precursor = cursor;
-				cursor = precursor->link();
-
+			list_insert(cursor, entry);
+			precursor = cursor;
+			cursor = precursor->link();
 		}
 
 		++many_nodes; // Increases the count of how many items there are in the list.
 	}
 
+	// assignment operator overload function
 	template<class Item>
 	void sequence<Item>::operator=(const sequence & source)
 	{
 		// Overloads the assignment operator so that it can be used to assign values from one sequence to another.
-		sequence s2;
-		head_ptr = source.head_ptr;
-		tail_ptr = source.tail_ptr;
-		cursor = head_ptr;
-		many_nodes = source.many_nodes;
+		
+		// If the current object is the same object as what source is pointing to then return
+		if (this == &source)
+		{
+			return;
+		}
 
-		list_copy(cursor, head_ptr, tail_ptr);
+		list_clear(head_ptr); // delete the linked list currently pointed at by the sequence object and release the memory
+		many_nodes = 0; // set the amount of nodes to 0
+
+		list_copy(source.head_ptr, head_ptr, tail_ptr); // copy the content of source's linked list to a new linked list
+		many_nodes = source.many_nodes; // set the amount of nodes to the amount source had
+
+		size_type sourceCursorIndex = 0; // declare an index to store the index of source's cursor
+		node<Item>* cursorAddress = source.cursor; // copy the address of the cursor pointer to be checked against later
+		node<Item>* tempSourceCursor = source.head_ptr; // copy the address of source's head_ptr so source can be iterated through without changing the const source
+		while (cursorAddress != tempSourceCursor) // check when the node being pointed at is the same as source's cursor
+		{
+			tempSourceCursor = tempSourceCursor->link(); // assign the temp cursor pointer to the next node
+			++sourceCursorIndex; // increase the cursor index by one
+		}
+
+		start(); // start the cursor at the beginning
+		for (size_type i = 0; i < sourceCursorIndex; ++i)
+		{
+			advance(); // advance the cursor (and by extension the precursor) until it is at the same "index" as source's cursor
+		}
 	}
 
 	template<class Item>
@@ -169,15 +211,12 @@ namespace CISP430_A3
 									// After call, there should be one less item in the list.
 			cursor = precursor->link();
 
-			if (cursor == NULL)
-			{
-				start();
-			}
 		}
 
-		--many_nodes;
+		--many_nodes; // Decreases the count of how many items there are in the list.
 	}
 
+	// get the current value of cucrsor
 	template<class Item>
 	Item sequence<Item>::current() const
 	{
