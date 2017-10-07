@@ -72,7 +72,7 @@
 #include <cstdlib>  // Provides size_t
 #include "node2.h"  // Provides node class
 
-namespace CISP430_A3 // TESTING COMMIT, CAPS SO I CAN REMEMBER TO DELETE IT LATER
+namespace CISP430_A3
 {
     template <class Item>
     class sequence

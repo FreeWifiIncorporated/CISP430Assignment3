@@ -18,6 +18,7 @@
     <None Include="CISP430V4A3Exam.exe" />
     <None Include="CISP430V4A3Test.exe" />
     <None Include="node2.template" />
+    <None Include="sequence4.template" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="node2.h">
@@ -29,9 +30,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sequence_exam4.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sequence_test4.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
